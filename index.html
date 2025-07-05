@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Student Performance Dashboard</title>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&family=Poppins:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    integrity="sha512-pjwZ4b6Z9+aw5K6eZrYZdO+IwaK2+z+H+VnQ2qR3h0/6Fg24By+F3G9KUGrZgGnxA0N0bgKUpfvbWSiFsLXRJQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Chart.js CDN -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+    defer
+  ></script>
+
+  <!-- Main JavaScript -->
+  <script src="script.js" defer></script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header>
+    <div class="logo-title">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <span data-en="Coach Student Analysis" data-ja="行知学生分析">Coach Student Analysis</span>
+    </div>
+    <div class="header-controls">
+      <button id="add-student-btn" class="add-student-btn">
+        <i class="fas fa-plus"></i>
+        <span data-en="Add Student" data-ja="学生追加">Add Student</span>
+      </button>
+      <button id="reset-data-btn" class="reset-data-btn">
+        <i class="fas fa-refresh"></i>
+        <span data-en="Reset Data" data-ja="データリセット">Reset Data</span>
+      </button>
+      <button id="language-toggle" class="language-toggle">
+        <span data-en="EN" data-ja="JP">EN</span>
+      </button>
+      <div class="user-icon">
+        <i class="fa-solid fa-user-circle"></i>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION BUTTONS -->
+  <div class="nav-buttons">
+    <button id="monthBtn" class="active" data-en="Student" data-ja="学生">Student</button>
+    <button id="universityBtn" data-en="University" data-ja="大学">University</button>
+    <button id="matchBtn" data-en="Match" data-ja="マッチ">Match</button>
+  </div>
+
+  <!-- Custom Select Dropdowns -->
+  <div class="select-container">
+    <div class="select-wrapper">
+      <label for="student-select" data-en="Select a Student" data-ja="学生を選択">Select a Student</label>
+      <div class="custom-select" id="student-select-wrapper">
+        <div class="select-trigger">
+          <span class="select-value" data-en="-- Select Student --" data-ja="-- 学生を選択 --">-- Select Student --</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="select-options" id="student-options">
+          <div class="select-option" data-value="" data-en="-- Select Student --" data-ja="-- 学生を選択 --">-- Select Student --</div>
+        </div>
+      </div>
+      <select id="student-select" style="display: none;">
+        <option value="" data-en="-- Select Student --" data-ja="-- 学生を選択 --">-- Select Student --</option>
+      </select>
+    </div>
+
+    <div class="select-wrapper">
+      <label for="date-select" data-en="Select a Date" data-ja="日付を選択">Select a Date</label>
+      <div class="custom-select disabled" id="date-select-wrapper">
+        <div class="select-trigger">
+          <span class="select-value" data-en="-- Select Date --" data-ja="-- 日付を選択 --">-- Select Date --</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="select-options" id="date-options">
+          <div class="select-option" data-value="" data-en="-- Select Date --" data-ja="-- 日付を選択 --">-- Select Date --</div>
+        </div>
+      </div>
+      <select id="date-select" style="display: none;">
+        <option value="" data-en="-- Select Date --" data-ja="-- 日付を選択 --">-- Select Date --</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="student-info" >
+    <p><strong data-en="Name:" data-ja="名前:">Name:</strong> <span id="student-name"></span></p>
+    <p><strong data-en="ID:" data-ja="学籍番号:">ID:</strong> <span id="student-id"></span></p>
+    <p><strong data-en="Profession:" data-ja="科目:">Profession:</strong> <span id="student-profession"></span></p>
+    <p><strong data-en="Target Department:" data-ja="志願学部:">Target Department:</strong> <span id="student-target-department"></span></p>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    <!-- Student Page -->
+
+    <section id="studentPage" class="page-section active">
+      <!-- Transposed October Test Scores -->
+      <div class="table-caption" data-en="Test Scores" data-ja="テスト成績">Test Scores</div>
+      <table class="score-table" id="gradesTable">
+        <thead>
+          <!-- Table header will be populated dynamically -->
+        </thead>
+        <tbody>
+          <!-- Table body will be populated dynamically -->
+        </tbody>
+      </table>
+          </div>
+
+      <!-- Two Charts Side by Side -->
+      <div class="two-column-wrapper">
+        <!-- Radar Chart -->
+        <section class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-radar"></i>
+            <h2 data-en="Monthly Test Scores" data-ja="月次テスト成績">Monthly Test Scores</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="radarChart"></canvas>
+          </div>
+        </section>
+
+        <!-- Pie Chart -->
+        <section class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-pie"></i>
+            <h2 data-en="Study Hours Suggestion" data-ja="学習時間の提案">Study Hours Suggestion</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- University Page -->
+    <section id="universityPage" class="page-section">
+      <!-- University Selection -->
+      <div class="select-container university-selects">
+        <div class="select-wrapper">
+          <label for="university-select" data-en="University" data-ja="受験校">受験校</label>
+          <div class="custom-select searchable" id="university-select-wrapper">
+            <div class="select-trigger">
+              <input type="text" class="select-search" id="university-search" data-en-placeholder="Type to search or select university..." data-ja-placeholder="大学を検索または選択してください..." placeholder="Type to search or select university..." />
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="university-options">
+              <div class="select-option" data-value="" data-en="-- Select University --" data-ja="-- 大学を選択 --">-- Select University --</div>
+            </div>
+          </div>
+          <select id="university-select" style="display: none;">
+            <option value="" data-en="-- Select University --" data-ja="-- 大学を選択 --">-- Select University --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="subject-select" data-en="Subject" data-ja="科目">科目</label>
+          <div class="custom-select disabled" id="subject-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Subject --" data-ja="-- 科目を選択 --">-- Select Subject --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="subject-options">
+              <div class="select-option" data-value="" data-en="-- Select Subject --" data-ja="-- 科目を選択 --">-- Select Subject --</div>
+            </div>
+          </div>
+          <select id="subject-select" style="display: none;">
+            <option value="" data-en="-- Select Subject --" data-ja="-- 科目を選択 --">-- Select Subject --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="year-select" data-en="Year" data-ja="年度">年度</label>
+          <div class="custom-select disabled" id="year-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="year-options">
+              <div class="select-option" data-value="" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</div>
+            </div>
+          </div>
+          <select id="year-select" style="display: none;">
+            <option value="" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="month-select" data-en="Month" data-ja="月">月</label>
+          <div class="custom-select disabled" id="month-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="month-options">
+              <div class="select-option" data-value="" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</div>
+            </div>
+          </div>
+          <select id="month-select" style="display: none;">
+            <option value="" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="department-select" data-en="Department" data-ja="学部／研究科">学部／研究科</label>
+          <div class="custom-select disabled" id="department-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Department --" data-ja="-- 学部を選択 --">-- Select Department --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="department-options">
+              <div class="select-option" data-value="" data-en="-- Select Department --" data-ja="-- 学部を選択 --">-- Select Department --</div>
+            </div>
+          </div>
+          <select id="department-select" style="display: none;">
+            <option value="" data-en="-- Select Department --" data-ja="-- 学部を選択 --">-- Select Department --</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- University Info -->
+      <div id="university-info">
+        <p><strong data-en="Applicants:" data-ja="受験生数:">Applicants:</strong> <span id="university-applicants"></span></p>
+        <p><strong data-en="Admitted:" data-ja="合格者数:">Admitted:</strong> <span id="university-admitted"></span></p>
+        <p><strong data-en="Acceptance Rate:" data-ja="倍率(%):">Acceptance Rate(%):</strong> <span id="university-rate"></span></p>
+      </div>
+
+      <!-- University Statistics Table -->
+      <div class="table-caption" data-en="University Statistics" data-ja="大学統計">University Statistics</div>
+      <div class="table-legend">
+        <div class="legend-item">
+          <span class="legend-color requirements-color"></span>
+          <span data-en="Requirements" data-ja="要求点">Requirements</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color lowest-color"></span>
+          <span data-en="Lowest Passing Grades" data-ja="最低合格点">Lowest Passing Grades</span>
+        </div>
+      </div>
+      <table class="score-table" id="universityTable">
+        <thead>
+          <!-- Table header will be populated dynamically -->
+        </thead>
+        <tbody>
+          <!-- Table body will be populated dynamically -->
+        </tbody>
+      </table>
+
+      <!-- Two Charts Side by Side -->
+      <div class="two-column-wrapper single-chart">
+        <!-- Radar Chart -->
+        <section class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-radar"></i>
+            <h2 data-en="University Requirements & Lowest Passing Grades" data-ja="大学要求点と最低合格点">University Requirements & Lowest Passing Grades</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="universityRadarChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Match Page -->
+    <section id="matchPage" class="page-section">
+      <!-- Match Selection -->
+      <div class="select-container">
+        <div class="select-wrapper">
+          <label for="match-year-select" data-en="Year" data-ja="年度">Year</label>
+          <div class="custom-select" id="match-year-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="match-year-options">
+              <div class="select-option" data-value="" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</div>
+            </div>
+          </div>
+          <select id="match-year-select" style="display: none;">
+            <option value="" data-en="-- Select Year --" data-ja="-- 年度を選択 --">-- Select Year --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="match-month-select" data-en="Month" data-ja="月">Month</label>
+          <div class="custom-select disabled" id="match-month-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="match-month-options">
+              <div class="select-option" data-value="" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</div>
+            </div>
+          </div>
+          <select id="match-month-select" style="display: none;">
+            <option value="" data-en="-- Select Month --" data-ja="-- 月を選択 --">-- Select Month --</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <label for="match-difficulty-select" data-en="Difficulty" data-ja="難易度">Difficulty</label>
+          <div class="custom-select" id="match-difficulty-select-wrapper">
+            <div class="select-trigger">
+              <span class="select-value" data-en="-- Select Difficulty --" data-ja="-- 難易度を選択 --">-- Select Difficulty --</span>
+              <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="select-options" id="match-difficulty-options">
+              <div class="select-option" data-value="" data-en="-- Select Difficulty --" data-ja="-- 難易度を選択 --">-- Select Difficulty --</div>
+              <div class="select-option" data-value="Easy" data-en="Easy" data-ja="簡単">Easy</div>
+              <div class="select-option" data-value="Medium" data-en="Medium" data-ja="普通">Medium</div>
+              <div class="select-option" data-value="Hard" data-en="Hard" data-ja="難しい">Hard</div>
+            </div>
+          </div>
+          <select id="match-difficulty-select" style="display: none;">
+            <option value="" data-en="-- Select Difficulty --" data-ja="-- 難易度を選択 --">-- Select Difficulty --</option>
+            <option value="Easy" data-en="Easy" data-ja="簡単">Easy</option>
+            <option value="Medium" data-en="Medium" data-ja="普通">Medium</option>
+            <option value="Hard" data-en="Hard" data-ja="難しい">Hard</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Student Score Display -->
+      <div class="student-score-display">
+        <span><strong data-en="Student Grades:" data-ja="学生成績:">Student Grades:</strong> <span id="match-student-score"></span></span>
+      </div>
+
+      <!-- Two Charts Side by Side -->
+      <div class="two-column-wrapper">
+        <!-- Radar Chart -->
+        <section class="card">
+          <div class="card-header">
+            <i class="fas fa-chart-radar"></i>
+            <h2 data-en="Student Performance vs. University Average" data-ja="学生成績 vs 大学平均">Student Performance vs. University Average</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="matchRadarChart"></canvas>
+          </div>
+        </section>
+
+        <!-- University Matches Card -->
+        <section class="card">
+          <div class="card-header">
+            <i class="fas fa-university"></i>
+            <h2 data-en="University Matches" data-ja="大学マッチ">University Matches</h2>
+          </div>
+          <div class="university-matches-container">
+            <div id="university-matches-list">
+              <!-- University matches will be populated dynamically -->
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Add Student Page -->
+    <section id="addStudentPage" class="page-section">
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-user-plus"></i>
+          <h2 data-en="Add New Student" data-ja="新規学生追加">Add New Student</h2>
+        </div>
+        
+        <div class="form-info">
+          <p data-en="Note: Student data is saved locally in your browser. Data will persist until you clear your browser data." data-ja="注意：学生データはブラウザのローカルストレージに保存されます。ブラウザデータをクリアするまでデータは保持されます。">
+            Note: Student data is saved locally in your browser. Data will persist until you clear your browser data.
+          </p>
+        </div>
+        
+        <form id="add-student-form" class="student-form">
+          <div class="form-grid">
+            <!-- Required Fields -->
+            <div class="form-group required">
+              <label for="student-id-input" data-en="Student ID (学籍番号)" data-ja="学籍番号">Student ID (学籍番号) *</label>
+              <input type="number" id="student-id-input" name="学籍番号" required>
+            </div>
+            
+            <div class="form-group required">
+              <label for="student-name-input" data-en="Name (姓名)" data-ja="姓名">Name (姓名) *</label>
+              <input type="text" id="student-name-input" name="姓名" required>
+            </div>
+            
+            <div class="form-group required">
+              <label for="date-input" data-en="Date (日期)" data-ja="日期">Date (日期) *</label>
+              <input type="text" id="date-input" name="日期" placeholder="YYYY.M" required>
+            </div>
+            
+            <div class="form-group required">
+              <label for="subject-input" data-en="Subject (科目)" data-ja="科目">Subject (科目) *</label>
+              <select id="subject-input" name="科目" required>
+                <option value="" data-en="-- Select Subject --" data-ja="-- 科目を選択 --">-- Select Subject --</option>
+                <option value="物化" data-en="Physics & Chemistry" data-ja="物理・化学">Physics & Chemistry (物化)</option>
+                <option value="物生" data-en="Physics & Biology" data-ja="物理・生物">Physics & Biology (物生)</option>
+                <option value="化生" data-en="Chemistry & Biology" data-ja="化学・生物">Chemistry & Biology (化生)</option>
+                <option value="文系" data-en="Liberal Arts" data-ja="文系">Liberal Arts (文系)</option>
+              </select>
+            </div>
+            
+            <div class="form-group required">
+              <label for="target-department-input" data-en="Target Department (志願)" data-ja="志願">Target Department (志願) *</label>
+              <input type="text" id="target-department-input" name="志願" required>
+            </div>
+            
+            <!-- Score Fields -->
+            <div class="form-group">
+              <label for="japanese-input" data-en="Japanese (日本語)" data-ja="日本語">Japanese (日本語)</label>
+              <input type="number" id="japanese-input" name="日本語" min="0" max="400">
+            </div>
+            
+            <div class="form-group">
+              <label for="math-lit-input" data-en="Math Literature (文数)" data-ja="文数">Math Literature (文数)</label>
+              <input type="number" id="math-lit-input" name="文数" min="0" max="200">
+            </div>
+            
+            <div class="form-group">
+              <label for="math-sci-input" data-en="Math Science (理数)" data-ja="理数">Math Science (理数)</label>
+              <input type="number" id="math-sci-input" name="理数" min="0" max="200">
+            </div>
+            
+            <div class="form-group">
+              <label for="physics-input" data-en="Physics (物理)" data-ja="物理">Physics (物理)</label>
+              <input type="number" id="physics-input" name="物理" min="0" max="100">
+            </div>
+            
+            <div class="form-group">
+              <label for="chemistry-input" data-en="Chemistry (化学)" data-ja="化学">Chemistry (化学)</label>
+              <input type="number" id="chemistry-input" name="化学" min="0" max="100">
+            </div>
+            
+            <div class="form-group">
+              <label for="biology-input" data-en="Biology (生物)" data-ja="生物">Biology (生物)</label>
+              <input type="number" id="biology-input" name="生物" min="0" max="100">
+            </div>
+            
+            <div class="form-group">
+              <label for="liberal-arts-input" data-en="Liberal Arts (文総)" data-ja="文総">Liberal Arts (文総)</label>
+              <input type="number" id="liberal-arts-input" name="文総" min="0" max="200">
+            </div>
+            
+            <div class="form-group">
+              <label for="essay-input" data-en="Essay (記述)" data-ja="記述">Essay (記述)</label>
+              <input type="number" id="essay-input" name="記述" min="0" max="50">
+            </div>
+            
+            <div class="form-group">
+              <label for="toefl-input" data-en="TOEFL" data-ja="TOEFL">TOEFL</label>
+              <input type="number" id="toefl-input" name="TOFEL" min="0" max="120">
+            </div>
+            
+            <div class="form-group">
+              <label for="total-score-input" data-en="Total Score (成績)" data-ja="成績">Total Score (成績)</label>
+              <input type="number" id="total-score-input" name="成績" min="0" max="1000">
+            </div>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save"></i>
+              <span data-en="Save Student" data-ja="学生保存">Save Student</span>
+            </button>
+            <button type="button" class="reset-btn" id="reset-form-btn">
+              <i class="fas fa-undo"></i>
+              <span data-en="Reset Form" data-ja="フォームリセット">Reset Form</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <div class="coach-title-section">
+    <img src="COACH_title.png" alt="COACH Academy" class="coach-title-image">
+  </div>
+  <footer>
+    © 2025 Coach Academy. All Rights Reserved.
+  </footer>
+</body>
+</html>
